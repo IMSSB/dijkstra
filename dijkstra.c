@@ -4,6 +4,8 @@
  *  Created on: 29/03/2016
  *      Author: ricardo
  */
+#include "dijkstra.h"
+
 void  alloc_mat(int ordem, Matriz *mat)
 {
 	int c;

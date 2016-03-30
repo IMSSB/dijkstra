@@ -16,7 +16,7 @@
 
 typedef struct
 {
-	int **elementos;
+	unsigned long int **elementos;
 
 }Matriz;
 
