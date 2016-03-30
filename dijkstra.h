@@ -9,6 +9,7 @@
 #define DIJKSTRA_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 #define INFINITY 1
 #define MAXNODES 1
 #define MEMBER 1
@@ -22,7 +23,7 @@ typedef struct
 
 void print_mat(int ordem,Matriz *x);
 void alloc_mat(int ordem, Matriz *mat);
-void ler_mat_arq(Matriz *x);
+int ler_mat_arq(Matriz *x);
 void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[]);
 
 #endif /* DIJKSTRA_H_ */
