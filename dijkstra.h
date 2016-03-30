@@ -15,7 +15,7 @@
 
 typedef struct
 {
-	double **elementos;
+	int **elementos;
 
 }Matriz;
 void print_mat(int ordem,Matriz *x);
