@@ -4,12 +4,67 @@
  *  Created on: 29/03/2016
  *      Author: ricardo
  */
-#include <stdio.h>
-#define INFINITY 1
-#define MAXNODES 1
-#define MEMBER 1
-#define NONMEMBER 0
+void  alloc_mat(int ordem, Matriz *mat)
+{
+	int c;
 
+
+	mat->elementos = (double **)malloc(sizeof(double)*ordem);
+	if(!mat->elementos)
+	{
+		printf("Error pointer for pointer dinamic alocation");
+		exit(0);
+	}
+	else
+	{
+
+		for(c=0;c<ordem;c++)
+		{
+			mat->elementos[c] = (double *)malloc(sizeof(double)*ordem);
+				if(!(mat->elementos[c]))
+				{
+					printf("Error pointer float alocation n(%d)",c+1);
+					exit(1);
+				}
+		}
+
+	}
+}
+void print_mat(int ordem,Matriz *x)
+{
+	int c,c1;
+	printf("\n");
+	for(c=0;c<ordem;c++)
+	{	printf("|");
+		for(c1=0;c1<ordem;c1++)
+		{
+			printf(" %.2lf",x->elementos[c][c1]);
+		}
+		printf(" |\n");
+	}
+	printf("\n");
+}
+
+void ler_mat_arq(Matriz *x)
+{
+	int n,l,c;
+	FILE *mat;
+
+	if(!(mat=fopen("simi.txt","a+")))
+	{
+		printf("Erro ao abrir arquivo");
+		exit(1);
+	}
+
+	fscanf(mat,"%d",&n);
+	alloc_mat(n,x);
+
+	for(l=0;l<n;l++)
+		for(c=0;c<n;c++)
+		{
+			fscanf(mat,"%lf",&(x->elementos[l][c]));
+		}
+}
 void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[])
 {
 	int distance[MAXNODES], perm[MAXNODES];
@@ -50,9 +105,5 @@ void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[])
 		perm[current] = MEMBER;
 	}
 	*pd = distance[t];
-
-}
-void main(void)
-{
 
 }
