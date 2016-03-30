@@ -9,7 +9,7 @@ void  alloc_mat(int ordem, Matriz *mat)
 	int c;
 
 
-	mat->elementos = (double **)malloc(sizeof(double)*ordem);
+	mat->elementos = (int **)malloc(sizeof(int)*ordem);
 	if(!mat->elementos)
 	{
 		printf("Error pointer for pointer dinamic alocation");
@@ -20,7 +20,7 @@ void  alloc_mat(int ordem, Matriz *mat)
 
 		for(c=0;c<ordem;c++)
 		{
-			mat->elementos[c] = (double *)malloc(sizeof(double)*ordem);
+			mat->elementos[c] = (int *)malloc(sizeof(int)*ordem);
 				if(!(mat->elementos[c]))
 				{
 					printf("Error pointer float alocation n(%d)",c+1);
@@ -38,7 +38,7 @@ void print_mat(int ordem,Matriz *x)
 	{	printf("|");
 		for(c1=0;c1<ordem;c1++)
 		{
-			printf(" %.2lf",x->elementos[c][c1]);
+			printf(" %d",x->elementos[c][c1]);
 		}
 		printf(" |\n");
 	}
@@ -62,7 +62,7 @@ void ler_mat_arq(Matriz *x)
 	for(l=0;l<n;l++)
 		for(c=0;c<n;c++)
 		{
-			fscanf(mat,"%lf",&(x->elementos[l][c]));
+			fscanf(mat,"%d",&(x->elementos[l][c]));
 		}
 }
 void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[])
