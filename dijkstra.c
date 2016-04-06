@@ -4,7 +4,7 @@
  *  Created on: 29/03/2016
  *      Author: ricardo
  */
-#include "dijkstra.h"
+/*#include "dijkstra.h"
 
 void  alloc_mat(int ordem, Matriz *mat)
 {
@@ -108,4 +108,4 @@ void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[])
 	}
 	*pd = distance[t];
 
-}
+}*/
