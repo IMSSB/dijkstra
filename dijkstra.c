@@ -4,14 +4,14 @@
  *  Created on: 29/03/2016
  *      Author: ricardo
  */
-/*#include "dijkstra.h"
+#include "dijkstra.h"
 
 void  alloc_mat(int ordem, Matriz *mat)
 {
 	int c;
 
 
-	mat->elementos = (int **)malloc(sizeof(int)*ordem);
+	mat->elementos = (unsigned long int **)malloc(sizeof(unsigned long int)*ordem);
 	if(!mat->elementos)
 	{
 		printf("Error pointer for pointer dinamic alocation");
@@ -22,7 +22,7 @@ void  alloc_mat(int ordem, Matriz *mat)
 
 		for(c=0;c<ordem;c++)
 		{
-			mat->elementos[c] = (int *)malloc(sizeof(int)*ordem);
+			mat->elementos[c] = (unsigned long int *)malloc(sizeof(unsigned long int)*ordem);
 				if(!(mat->elementos[c]))
 				{
 					printf("Error pointer float alocation n(%d)",c+1);
@@ -40,14 +40,14 @@ void print_mat(int ordem,Matriz *x)
 	{	printf("|");
 		for(c1=0;c1<ordem;c1++)
 		{
-			printf(" %d",x->elementos[c][c1]);
+			printf(" %lu",x->elementos[c][c1]);
 		}
 		printf(" |\n");
 	}
 	printf("\n");
 }
 
-void ler_mat_arq(Matriz *x)
+int ler_mat_arq(Matriz *x)
 {
 	int n,l,c;
 	FILE *mat;
@@ -64,8 +64,10 @@ void ler_mat_arq(Matriz *x)
 	for(l=0;l<n;l++)
 		for(c=0;c<n;c++)
 		{
-			fscanf(mat,"%d",&(x->elementos[l][c]));
+			fscanf(mat,"%lu",&(x->elementos[l][c]));
 		}
+
+	return n;
 }
 void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[])
 {
@@ -108,4 +110,6 @@ void shortpath(int weight[][MAXNODES], int s, int t, int *pd, int precede[])
 	}
 	*pd = distance[t];
 
-}*/
+
+}
+
