@@ -22,80 +22,88 @@
 #define TRUE 1
 #define FALSE 0
 #define INFINITE 99999999
+#define pause printf("\nDigite algo para continuar\n"); getchar();
+#define cls system("CLS || clear");
+#define nl printf("\n");
+#define big_line printf("\n____________________________________________________________\n");
 
-typedef struct nd{
-   int visitado; //TRUE(1) ou FALSE(0)
+typedef struct nodo {
+   int visited; //TRUE(1) ou FALSE(0)
    int rotulo; //Rótulo do nó.
-   int indice;
-   struct nd *prox; //Aponta para o próximo nó
+   int index;
+   /*double G, F, H;*/
+   struct nodo *next; //Aponta para o próximo nó
 }NODO;
 
-typedef struct{
-   NODO **nodo; //é um vetor dinâmico com os ponteiros para os primeiros elementos das listas encadeadas.
-   int tam; //Tamanho do vetor listaAdj
-}ListaAdj;
+typedef struct {
+   NODO **nodo; //	é um vetor dinâmico com os ponteiros para os primeiros elementos das listas encadeadas.
+   int tam; 	//	Tamanho do vetor listaAdj
+}LISTAADJ;
 
 typedef struct{
 	NODO* topo;
 	int tam;
-}Fila;
+}FILA;
 
 typedef struct {
-	int indice;
-	int linha;
+	int index;
+	int line;
 }Predecessor;
 
-//Zera o campo 'visitado' de todos os nós
-void zerarVisitados(ListaAdj listaAdj);
+void error_m(char *errormessage);
+void project_presentation();
+void formated_message(char *string);
+
+//Zera o campo 'visited' de todos os nós
+void zerar_visitados(LISTAADJ listaAdj);
 
 //Retorna TRUE se existe um arco direto entre deRotulo e paraRotulo
-int existeArco(ListaAdj listaAdj,int deRotulo,int paraRotulo);
+int existeArco(LISTAADJ listaAdj,int deRotulo,int paraRotulo);
 
 //retorna o rótulo do primeiro nó disponível a partir de "origem".
 //Retorna -1 caso não encontre nenhum nó disponível.
-int encontrarQualquerDestino(ListaAdj listaAdj,int origemRotulo);
+int encontrarQualquerDestino(LISTAADJ listaAdj,int origemRotulo);
 
 //Retorna a posição do nó cabeça de lista no vetor da lista de adjacência.
 //Se não encontrar retorna -1.
-int buscarIndiceNodo(ListaAdj listaAdj,int rotulo);
+int buscarIndiceNodo(LISTAADJ listaAdj,int rotulo);
 
 //Exibe a lista de adjacência na tela
-void exibirListaAdj(ListaAdj listaAdj);
+void exibir_lista_adj(LISTAADJ listaAdj);
 
-ListaAdj* criarListaAdj(void);
+LISTAADJ* criar_lista_adj(void);
 
 //Insere numa lista encadeada. Recebe a referência do primeiro elemento da lista.
-int inserirEmLista(NODO **lista,int rotulo,int indice);
+int inserir_lista(NODO **lista,int rotulo,int indice);
 
 //Lê a lista de adjacência de um arquivo texto.
-int lerEstacoes(char* arquivo,ListaAdj* listaAdj);
+int ler_estacoes(char* arquivo,LISTAADJ* listaAdj);
 
-int carregarMatriz(char* arquivo,int matriz[][NUM_STATIONS]);
+int carregar_matriz_int(char* arquivo,int matriz[][NUM_STATIONS]);
+int carregar_matriz_double(char* arquivo,double matriz[][NUM_STATIONS]);
 
-void percursoEmProfundidade(ListaAdj *listaAdj,int origem);
-void percursoEmLargura(ListaAdj *listaAdj,int origemRotulo, Fila *fifo);
+void percurso_profundidade(LISTAADJ *listaAdj,int origem);
+void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 
-int dijkstra(ListaAdj *listaAdj,int origemRotulo,int destinoRotulo,
+int dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
 	Predecessor *precede,int distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 
-int peso(ListaAdj listaAdj,int origem,int destino,int distancia[][NUM_STATIONS]);
-int exibirMenorCaminho(ListaAdj *listaAdj,Predecessor *precede,int origem,int destino);
+int peso(LISTAADJ listaAdj,int origem,int destino,int distancia[][NUM_STATIONS]);
+int exibirMenorCaminho(LISTAADJ *listaAdj,Predecessor *precede,int origem,int destino);
 
-//operações sobre Fila do tipo FIFO
-void enfileirar(Fila *fifo,NODO *nodo);
+//FUNÇÕES DE FILAS
+FILA* criar_fila(void);
+void destruir_fila(FILA **fila);
+NODO desenfileirar(FILA *fila);
+void exibir_fila(FILA fila);
+void exibir_fila_invertida(NODO *topo);
+void copiar_fila(FILA *origem,FILA **destino);
 
-//Operações sobre uma Fila do tipo LIFO
-void empilhar(Fila *lifo,NODO *nodo);
+//LIFO
+void empilhar(FILA *lifo,NODO *nodo);
 
-void limparTela(void);
-
-//Operações sobre uma fila qualquer
-Fila* criarFila(void);
-void destruirFila(Fila **Fila);
-NODO desenfileirar(Fila *fila);
-void exibirFila(Fila fila);
-void exibirFilaInvertida(NODO *topo);
-void copiarFila(Fila *origem,Fila **destino);
+//FIFO
+void enfileirar(FILA *fifo,NODO *nodo);
 
 void nomeDaLinha(int linha,char *nome);
 
