@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#pragma hdrstop
 
 #define FILE_STATIONS "estacoes.txt"
 #define FILE_DISTANCES "distancias.txt"
@@ -28,11 +27,11 @@
 #define big_line printf("\n____________________________________________________________\n");
 
 typedef struct nodo {
-   int visited; //TRUE(1) ou FALSE(0)
-   int rotulo; //Rótulo do nó.
+   int visited;
+   int rotulo;
    int index;
-   /*double G, F, H;*/
-   struct nodo *next; //Aponta para o próximo nó
+   double G, F, H;
+   struct nodo *next;
 }NODO;
 
 typedef struct {
@@ -48,25 +47,26 @@ typedef struct{
 typedef struct {
 	int index;
 	int line;
-}Predecessor;
+}predecessor;
+
+
+int metro_paris();
 
 void error_m(char *errormessage);
 void project_presentation();
 void formated_message(char *string);
 
-//Zera o campo 'visited' de todos os nós
 void zerar_visitados(LISTAADJ listaAdj);
 
-//Retorna TRUE se existe um arco direto entre deRotulo e paraRotulo
-int existeArco(LISTAADJ listaAdj,int deRotulo,int paraRotulo);
+int existe_arco(LISTAADJ listaAdj,int deRotulo,int paraRotulo);
 
 //retorna o rótulo do primeiro nó disponível a partir de "origem".
 //Retorna -1 caso não encontre nenhum nó disponível.
-int encontrarQualquerDestino(LISTAADJ listaAdj,int origemRotulo);
+int encontrar_qualquer_destino(LISTAADJ listaAdj,int origemRotulo);
 
 //Retorna a posição do nó cabeça de lista no vetor da lista de adjacência.
 //Se não encontrar retorna -1.
-int buscarIndiceNodo(LISTAADJ listaAdj,int rotulo);
+int buscar_indice_nodo(LISTAADJ listaAdj,int rotulo);
 
 //Exibe a lista de adjacência na tela
 void exibir_lista_adj(LISTAADJ listaAdj);
@@ -85,11 +85,10 @@ int carregar_matriz_double(char* arquivo,double matriz[][NUM_STATIONS]);
 void percurso_profundidade(LISTAADJ *listaAdj,int origem);
 void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 
-int dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
-	Predecessor *precede,int distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
+double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 
-int peso(LISTAADJ listaAdj,int origem,int destino,int distancia[][NUM_STATIONS]);
-int exibirMenorCaminho(LISTAADJ *listaAdj,Predecessor *precede,int origem,int destino);
+double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS]);
+int exibirMenorCaminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);
 
 //FUNÇÕES DE FILAS
 FILA* criar_fila(void);

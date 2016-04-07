@@ -8,21 +8,27 @@
 
 int main()
 {
-	int origem=1,destino,temp;
-	int distancia[NUM_STATIONS][NUM_STATIONS],linha[NUM_STATIONS][NUM_STATIONS];
-	double distancia2[NUM_STATIONS][NUM_STATIONS];
+	project_presentation();
+	metro_paris();
+
+	return 0;
+}
+//---------------------------------------------------------------------------
+int metro_paris()
+{
+	int origem=1,destino=1;
+	int linha[NUM_STATIONS][NUM_STATIONS];
+	double distancia[NUM_STATIONS][NUM_STATIONS], temp;
 	int horas,minutos;
 	//distancia[i][j] refere-se a distancia em linha reta entre o nó de rótulo [i+1] e o nó de rotulo[j+1]
 	LISTAADJ *listaAdj;
-	Predecessor *precede;
+	predecessor *precede;
 
 	listaAdj=criar_lista_adj();
 
 	if(!ler_estacoes(FILE_STATIONS,listaAdj))
 		error_m("Erro ao ler arquivo de estacões.");
-	if(!carregar_matriz_int(FILE_DISTANCES,distancia))
-		error_m("Erro ao ler arquivo de distancias.");
-	if(!carregar_matriz_double("distancias2.txt",distancia2))
+	if(!carregar_matriz_double(FILE_DISTANCES,distancia))
 		error_m("Erro ao ler arquivo de distancias.");
 	pause;
 	if(!carregar_matriz_int(FILE_LINES,linha))
@@ -40,15 +46,15 @@ int main()
 		if(!destino)
 			return 1;
 
-		if (!(precede=(Predecessor*)malloc((sizeof(Predecessor)*listaAdj->tam))))
+		if (!(precede=(predecessor*)malloc((sizeof(predecessor)*listaAdj->tam))))
 				error_m("Erro ao alocar memória.");
 
 		temp=dijkstra(listaAdj,origem,destino,precede,distancia,linha);
 		if(temp>0){
-			printf("\n\nMenor distancia pelo algoritmo de Dijkstra = %d",temp);
+			printf("\n\nMenor distancia pelo algoritmo de Dijkstra = %lf",temp);
 			printf("\n\nTrajeto: ");
 			exibirMenorCaminho(listaAdj,precede,origem,destino);
-			minutos=(temp*60)/30;
+			minutos=(temp*60)/SPEED;
 			horas=minutos/60;
 			minutos=minutos%60;
 			printf("\n\nTempo estimado do trajeto: %d hora(s) e %d minuto(s)",horas,minutos);
@@ -61,8 +67,8 @@ int main()
 	}
 	return 0;
 }
-//---------------------------------------------------------------------------
-//retorna o primeiro nó disponível a partir de "origem"
+
+
 void error_m(char *errormessage)
 { 	/* Fun��o para facilitar exibi��o de mensagens de erro */
     printf("\n%s",errormessage);
@@ -72,13 +78,12 @@ void error_m(char *errormessage)
 void project_presentation()
 {
 	big_line;
-	formated_message("E-Server v.2.0");
+	formated_message("Metro de Paris");
 	formated_message("Trabalho da Disciplina Algoritmos e Estrutura de Dados II");
 	formated_message("Professora: Ana Emilia de Melo Queiroz");
 	formated_message("Alunos:     Ricardo Valério Teixeira de Medeiros Silva");
 	formated_message("            Ruan de Medeiros Bahia");
-	formated_message("Simulador de um servidor de e-mails, sendo salvos em arquivos,");
-	formated_message("com uso de Árvores B para pesquisas nos dados");
+	formated_message("Calculando o menor caminho entre duas estações no Metro de Paris.");
 	big_line;
 
 	pause;
@@ -93,19 +98,19 @@ void formated_message(char *string){
 				"\t\\\\\\\\");
 }
 
-int encontrarQualquerDestino(LISTAADJ listaAdj,int origemRotulo)
+int encontrar_qualquer_destino(LISTAADJ listaAdj,int origemRotulo)
 {
 	int temp;
 	NODO *aux;
 
-	if((temp=buscarIndiceNodo(listaAdj,origemRotulo))==-1)
+	if((temp=buscar_indice_nodo(listaAdj,origemRotulo))==-1)
 		return -1;
 
 	aux=listaAdj.nodo[temp]->next; //Segundo nó da lista de adjacência
 
 	while(aux!=NULL)
 	{
-		temp=buscarIndiceNodo(listaAdj,aux->rotulo);
+		temp=buscar_indice_nodo(listaAdj,aux->rotulo);
 		if(listaAdj.nodo[temp]->visited==FALSE)
 			return listaAdj.nodo[temp]->rotulo;
 		aux=aux->next;
@@ -116,17 +121,16 @@ int encontrarQualquerDestino(LISTAADJ listaAdj,int origemRotulo)
 void zerar_visitados(LISTAADJ listaAdj)
 {
 	int i;
-
 	for(i=0;i<listaAdj.tam;i++)
 		listaAdj.nodo[i]->visited=FALSE;
 }
 
-int existeArco(LISTAADJ listaAdj,int deRotulo,int paraRotulo)
+int existe_arco(LISTAADJ listaAdj,int deRotulo,int paraRotulo)
 {
 	int posicao;
 	NODO* aux;
 
-	if((posicao=buscarIndiceNodo(listaAdj,deRotulo))<0)
+	if((posicao=buscar_indice_nodo(listaAdj,deRotulo))<0)
 		return FALSE;
 	aux=listaAdj.nodo[posicao]->next;
 	while((aux!=NULL)&&(aux->rotulo!=paraRotulo))
@@ -136,13 +140,13 @@ int existeArco(LISTAADJ listaAdj,int deRotulo,int paraRotulo)
 	return FALSE;
 }
 
-int buscarIndiceNodo(LISTAADJ listaAdj,int rotulo)
+int buscar_indice_nodo(LISTAADJ listaAdj,int rotulo)
 {
 	int i;
 	if(rotulo)
-	for(i=0;i<listaAdj.tam;i++)
-		if((listaAdj.nodo[i]!=NULL)&&((listaAdj.nodo[i]->rotulo)==rotulo))
-			return i;
+		for(i=0;i<listaAdj.tam;i++)
+			if((listaAdj.nodo[i]!=NULL)&&((listaAdj.nodo[i]->rotulo)==rotulo))
+				return i;
 	return -1;
 }
 
@@ -227,8 +231,8 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj) //Retorna FALSE caso não con
 		if(aux=='-')
 		{
 			listaAtual=rotulo;
-			index=buscarIndiceNodo(*listaAdj,rotulo);
-			//printf("\n\nINDICE: %d\n",index);
+			index=buscar_indice_nodo(*listaAdj,rotulo);
+
 			if(index==-1)
 			{
 				(listaAdj->tam)++;
@@ -240,19 +244,19 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj) //Retorna FALSE caso não con
 		}
 		else
 		{
-			index=buscarIndiceNodo(*listaAdj,rotulo);
+			index=buscar_indice_nodo(*listaAdj,rotulo);
 			if(index<0)
 			{
 				(listaAdj->tam)++;
 				listaAdj->nodo=(NODO **) realloc(listaAdj->nodo,(listaAdj->tam+1)*sizeof(NODO*)); //Realoca o vetor de listas
 				listaAdj->nodo[listaAdj->tam-1]=NULL; //Inicializa a lista
 				inserir_lista(&(listaAdj->nodo[listaAdj->tam-1]),rotulo,listaAdj->tam-1); //Insere na lista
-				temp=buscarIndiceNodo(*listaAdj,listaAtual);
+				temp=buscar_indice_nodo(*listaAdj,listaAtual);
 				inserir_lista(&(listaAdj->nodo[temp]),rotulo,listaAdj->tam-1);
 			}
 			else
 			{
-				temp=buscarIndiceNodo(*listaAdj,listaAtual);
+				temp=buscar_indice_nodo(*listaAdj,listaAtual);
 				inserir_lista(&(listaAdj->nodo[temp]),rotulo,index);
 			}
 		}
@@ -355,7 +359,7 @@ void enfileirar(FILA *fifo,NODO *nodo)
 	novo->visited=nodo->visited;
 	novo->next=NULL;
 
-	if((fifo->topo)==NULL) //Se a fila está vazia
+	if((fifo->topo)==NULL)
 		fifo->topo=novo;
 	else
 	{
@@ -434,10 +438,10 @@ void copiar_fila(FILA *origem,FILA **destino)
 
 void percurso_profundidade(LISTAADJ *listaAdj,int origemRotulo)
 {
-	int tempRotulo,tempIndice;
+	int tempIndice;
 	NODO* aux;
 
-	if((tempIndice=buscarIndiceNodo(*listaAdj,origemRotulo))<0)
+	if((tempIndice=buscar_indice_nodo(*listaAdj,origemRotulo))<0)
 		return;
 	printf("%d ",listaAdj->nodo[tempIndice]->rotulo);
 
@@ -457,7 +461,7 @@ void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo)
 	int tempIndice;
 	NODO *aux,temp;
 
-	if((tempIndice=buscarIndiceNodo(*listaAdj,origemRotulo))<0)
+	if((tempIndice=buscar_indice_nodo(*listaAdj,origemRotulo))<0)
 		return;
 	printf("%d ",listaAdj->nodo[tempIndice]->rotulo);
 
@@ -476,57 +480,60 @@ void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo)
 	if(temp.rotulo!=-1)
 			percurso_largura(listaAdj,temp.rotulo,fifo);
 }
-int dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	Predecessor *precede,int distancia[][NUM_STATIONS],int linha[][NUM_STATIONS])
-{
-	int *dist,*perm;
-	int i,j,indexOrigem,indexDestino,corrente,menorDist,novaDist,dc,cont=0;
-	int linhaPrecede[NUM_STATIONS],novaLinha;
-	indexOrigem=buscarIndiceNodo(*listaAdj,origemRotulo);
-	indexDestino=buscarIndiceNodo(*listaAdj,destinoRotulo);
 
-	dist=NULL;
+double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS])
+{
+	int *perm;
+	double *dista, nova_dista, menor_dista;
+	int i,j,indexOrigem,indexDestino,corrente,dc,cont=0;
+	int novaLinha;
+	indexOrigem=buscar_indice_nodo(*listaAdj,origemRotulo);
+	indexDestino=buscar_indice_nodo(*listaAdj,destinoRotulo);
+
+	dista=NULL;
 	perm=NULL;
-	dist=(int*)malloc(sizeof(int)*(listaAdj->tam));
-	perm=(int*)malloc(sizeof(int)*(listaAdj->tam));
+
+	if (!(dista=(double*)malloc(sizeof(double)*(listaAdj->tam))))
+		error_m("Erro ao alocar memória.");
+	if (!(perm=(int*)malloc(sizeof(int)*(listaAdj->tam))))
+		error_m("Erro ao alocar memória.");
 
 	for(i=0;i<listaAdj->tam;i++)
 	{
-		dist[i]=INFINITE;
+		dista[i]=INFINITE;
 		perm[i]=FALSE;
 		precede[i].index=-1;
 		precede[i].line=-1;
 	}
 	perm[indexOrigem]=TRUE;
-	dist[indexOrigem]=0;
+	dista[indexOrigem]=0;
 	corrente=indexOrigem;
 	while(corrente!=indexDestino)
 	{
-		//printf("\nCORRENTE: %d\n",listaAdj->nodo[corrente]->rotulo);
-
 		cont++;
-		menorDist=INFINITE;
-		dc = dist[corrente];
+		menor_dista=INFINITE;
+		dc = dista[corrente];
 		for(i=0;i<listaAdj->tam;i++)
 		{
 			if(perm[i]==FALSE)
 			{
-				novaDist=dc+peso(*listaAdj,corrente,i,distancia);
+				nova_dista=dc+peso(*listaAdj,corrente,i,distancia);
 				novaLinha=linha[listaAdj->nodo[corrente]->rotulo-1][listaAdj->nodo[i]->rotulo-1];
-				//printf("\nNOVA LINHA: %d\n",novaLinha);
-				if(novaDist<dist[i])
+
+				if(nova_dista<dista[i])
 				{
 					if((precede[corrente].line!=-1)&&(precede[corrente].line!=novaLinha))
-						novaDist+=2;
-					if(novaDist<dist[i])
+						nova_dista+=2;
+					if(nova_dista<dista[i])
 					{
-						dist[i]=novaDist;
+						dista[i]=nova_dista;
 						precede[i].index=corrente;
 						precede[i].line=novaLinha;
 					}
 				}
-				if(dist[i]<menorDist)
+				if(dista[i]<menor_dista)
 				{
-					menorDist=dist[i];
+					menor_dista=dista[i];
 					j=i;
 				}
 			}
@@ -536,13 +543,13 @@ int dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	Predecessor 
 		if(cont>listaAdj->tam)
 			return -1;
 	}
-	j=dist[indexDestino];
-	free(dist);
+	menor_dista=dista[indexDestino];
+	free(dista);
 	free(perm);
-	return j;
+	return menor_dista;
 }
 
-int peso(LISTAADJ listaAdj,int origem,int destino,int distancia[][NUM_STATIONS])
+double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
 {
 	NODO* aux;
 	int rotuloOrigem,rotuloDestino;
@@ -560,7 +567,7 @@ int peso(LISTAADJ listaAdj,int origem,int destino,int distancia[][NUM_STATIONS])
 	return 0;
 }
 
-int exibirMenorCaminho(LISTAADJ *listaAdj,Predecessor *precede,int origem,int destino)
+int exibirMenorCaminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino)
 {
 	int aux,origemIndice,destinoIndice;
 	FILA* lifo; //Pilha para auxiliar na exibição do caminho
@@ -568,8 +575,8 @@ int exibirMenorCaminho(LISTAADJ *listaAdj,Predecessor *precede,int origem,int de
 	char nomeLinha[20];
 	lifo=criar_fila();
 
-	origemIndice=buscarIndiceNodo(*listaAdj,origem);
-	destinoIndice=buscarIndiceNodo(*listaAdj,destino);
+	origemIndice=buscar_indice_nodo(*listaAdj,origem);
+	destinoIndice=buscar_indice_nodo(*listaAdj,destino);
 
 	empilhar(lifo,listaAdj->nodo[destinoIndice]);
 	aux=precede[destinoIndice].index;

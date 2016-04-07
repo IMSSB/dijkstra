@@ -31,6 +31,7 @@ struct node{
 	int x, y; // Node coordinates
 	float f, g, h; // Internal variables used for A* algorithm
 	node* previous; // Previous node
+	int rotulo;
 };
 
 typedef struct astar_result{
