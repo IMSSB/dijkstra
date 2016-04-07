@@ -45,7 +45,13 @@ typedef struct
 
 typedef struct
 {
-	NODO* topo;
+	NODO *primeiro;
+	int tam;
+}LISTA;
+
+typedef struct
+{
+	NODO *topo;
 	int tam;
 }FILA;
 
@@ -87,7 +93,7 @@ void exibir_lista_adj(LISTAADJ listaAdj);
 LISTAADJ* criar_lista_adj(void);
 
 //Insere numa lista encadeada. Recebe a referência do primeiro elemento da lista.
-int inserir_lista(NODO **lista,int rotulo,int indice);
+int inserir_lista_adj(NODO **lista,int rotulo,int indice);
 
 int ler_estacoes(char* arquivo,LISTAADJ* listaAdj);
 
@@ -98,6 +104,7 @@ void percurso_profundidade(LISTAADJ *listaAdj,int origem);
 void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 
 double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
+double astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,NODO **lista_aberta, NODO **lista_fechada,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS]);
 int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);

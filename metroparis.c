@@ -19,6 +19,7 @@ int metro_paris()
 	int origem=1,destino=1;
 	int linha[NUM_STATIONS][NUM_STATIONS];
 	double distancia[NUM_STATIONS][NUM_STATIONS], distancia_real[NUM_STATIONS][NUM_STATIONS], temp;
+	NODO *lista_aberta, *lista_fechada;
 	int horas,minutos;
 	//distancia[i][j] refere-se a distancia em linha reta entre o nó de rótulo [i+1] e o nó de rotulo[j+1]
 	LISTAADJ *listaAdj;
@@ -51,6 +52,7 @@ int metro_paris()
 				error_m("Erro ao alocar memória.");
 
 		temp=dijkstra(listaAdj,origem,destino,precede,distancia,linha);
+		//astar(*listaAdj,origem,destino,&lista_aberta,&lista_fechada,distancia,distancia_real);
 		if(temp>0)
 		{
 			printf("\n\nMenor distancia pelo algoritmo de Dijkstra = %lf",temp);
@@ -172,19 +174,59 @@ void exibir_lista_adj(LISTAADJ listaAdj){
 	}
 }
 
-LISTAADJ* criar_lista_adj(void){
+LISTAADJ* criar_lista_adj(){
 	LISTAADJ* new;
 	if (!(new=(LISTAADJ*)malloc(sizeof(LISTAADJ))))
-	{
-		printf("Error at memory reservation.\n");
-		exit(1);
-	}
+		error_m("Erro na alocação de memória.");
 	new->nodo=NULL;
 	new->tam=0;
 	return new;
 }
 
-int inserir_lista(NODO **lista,int rotulo,int index)
+LISTA* criar_lista()
+{
+	LISTA *new;
+	if (!(new=(LISTA*)malloc(sizeof(LISTA))))
+		error_m("Erro na alocação de memória.");
+	new->primeiro = NULL;
+	new->tam = 0;
+	return new;
+}
+
+void retirar_lista(LISTA **lista, int index)
+{
+	NODO *rem;
+	if (index < (*lista)->tam)
+	{
+		for (rem = (*lista)->primeiro; (index+1); index--)
+			rem = rem->next;
+		free (rem);
+	}
+	return;
+}
+
+void destruir_lista(LISTA **lista)
+{
+	NODO *ant, *prox;
+	if ((*lista)->primeiro != NULL)
+	{
+		ant = (*lista)->primeiro;
+		prox = ant->next;
+		while(prox != NULL)
+		{
+			free(ant);
+			ant=prox;
+			prox=prox->next;
+		}
+		free(ant);
+	}
+	free(*lista);
+	*lista = NULL;
+
+	return;
+}
+
+int inserir_lista_adj(NODO **lista,int rotulo,int index)
 {
 	NODO *aux,*novoNodo;
 	aux=(*lista);
@@ -209,6 +251,7 @@ int inserir_lista(NODO **lista,int rotulo,int index)
 	}
 	return TRUE;
 }
+
 
 /* O arquivo deve ser da seguinte forma:
    NodoPai-filho1,filho2,filhoN...
@@ -243,7 +286,7 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj) //Retorna FALSE caso não con
 				listaAdj->nodo=(NODO **) realloc(listaAdj->nodo,(listaAdj->tam+1)*sizeof(NODO*)); //Realoca o vetor de listas
 				listaAdj->nodo[listaAdj->tam-1]=NULL; //Inicializa a lista
 				index=listaAdj->tam-1;
-				inserir_lista(&(listaAdj->nodo[index]),rotulo,index); //Insere na lista 'i'
+				inserir_lista_adj(&(listaAdj->nodo[index]),rotulo,index); //Insere na lista 'i'
 			}
 		}
 		else
@@ -254,14 +297,14 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj) //Retorna FALSE caso não con
 				(listaAdj->tam)++;
 				listaAdj->nodo=(NODO **) realloc(listaAdj->nodo,(listaAdj->tam+1)*sizeof(NODO*)); //Realoca o vetor de listas
 				listaAdj->nodo[listaAdj->tam-1]=NULL; //Inicializa a lista
-				inserir_lista(&(listaAdj->nodo[listaAdj->tam-1]),rotulo,listaAdj->tam-1); //Insere na lista
+				inserir_lista_adj(&(listaAdj->nodo[listaAdj->tam-1]),rotulo,listaAdj->tam-1); //Insere na lista
 				temp=buscar_indice_nodo(*listaAdj,listaAtual);
-				inserir_lista(&(listaAdj->nodo[temp]),rotulo,listaAdj->tam-1);
+				inserir_lista_adj(&(listaAdj->nodo[temp]),rotulo,listaAdj->tam-1);
 			}
 			else
 			{
 				temp=buscar_indice_nodo(*listaAdj,listaAtual);
-				inserir_lista(&(listaAdj->nodo[temp]),rotulo,index);
+				inserir_lista_adj(&(listaAdj->nodo[temp]),rotulo,index);
 			}
 		}
    }
@@ -555,7 +598,7 @@ double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
 }
 
 double astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
-		predecessor *precede,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS])
+		NODO **lista_aberta, NODO **lista_fechada,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS])
 {
 	int *perm;
 	double *dista, nova_dista, menor_dista;
@@ -572,13 +615,8 @@ double astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
 	if (!(perm=(int*)malloc(sizeof(int)*(listaAdj->tam))))
 		error_m("Erro ao alocar memória.");
 
-	for(i=0;i<listaAdj->tam;i++)
-	{
-		dista[i]=INFINITE;
-		perm[i]=FALSE;
-		precede[i].index=-1;
-		precede[i].line=-1;
-	}
+	inserir_lista_adj(lista_aberta,origemRotulo,indexOrigem);
+	/*
 	perm[indexOrigem]=TRUE;
 	dista[indexOrigem]=0;
 	atual=indexOrigem;
@@ -620,7 +658,7 @@ double astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
 	menor_dista=dista[indexDestino];
 	free(dista);
 	free(perm);
-	return menor_dista;
+	return menor_dista;*/
 }
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
