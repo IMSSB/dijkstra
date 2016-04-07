@@ -18,7 +18,7 @@ int metro_paris()
 {
 	int origem=1,destino=1;
 	int linha[NUM_STATIONS][NUM_STATIONS];
-	double distancia[NUM_STATIONS][NUM_STATIONS], temp;
+	double distancia[NUM_STATIONS][NUM_STATIONS], distancia_real[NUM_STATIONS][NUM_STATIONS], temp;
 	int horas,minutos;
 	//distancia[i][j] refere-se a distancia em linha reta entre o nó de rótulo [i+1] e o nó de rotulo[j+1]
 	LISTAADJ *listaAdj;
@@ -30,7 +30,8 @@ int metro_paris()
 		error_m("Erro ao ler arquivo de estacões.");
 	if(!carregar_matriz_double(FILE_DISTANCES,distancia))
 		error_m("Erro ao ler arquivo de distancias.");
-	pause;
+	if(!carregar_matriz_double(FILE_REAL_DISTANCES,distancia_real))
+		error_m("Erro ao ler arquivo de distancias.");
 	if(!carregar_matriz_int(FILE_LINES,linha))
 		error_m("Erro ao ler arquivo de linhas.");
 
@@ -50,15 +51,17 @@ int metro_paris()
 				error_m("Erro ao alocar memória.");
 
 		temp=dijkstra(listaAdj,origem,destino,precede,distancia,linha);
-		if(temp>0){
+		if(temp>0)
+		{
 			printf("\n\nMenor distancia pelo algoritmo de Dijkstra = %lf",temp);
 			printf("\n\nTrajeto: ");
-			exibirMenorCaminho(listaAdj,precede,origem,destino);
+			exibir_menor_caminho(listaAdj,precede,origem,destino);
 			minutos=(temp*60)/SPEED;
 			horas=minutos/60;
 			minutos=minutos%60;
 			printf("\n\nTempo estimado do trajeto: %d hora(s) e %d minuto(s)",horas,minutos);
-		}else
+		}
+		else
 			printf("\n\nNão existe uma rota de %d para %d\n",origem,destino);
 
 		getc(stdin);
@@ -193,6 +196,7 @@ int inserir_lista(NODO **lista,int rotulo,int index)
 	novoNodo->rotulo=rotulo;
 	novoNodo->next=NULL;
 	novoNodo->index=index;
+	novoNodo->F = novoNodo->G = novoNodo->H = 0;
 
 	if(*lista==NULL) //se a lista está vazia
 		*lista=novoNodo;
@@ -225,7 +229,7 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj) //Retorna FALSE caso não con
 	  return FALSE;
    while((getc(fp))!=EOF)
    {
-	  fseek(fp,-1*sizeof(char),SEEK_CUR);
+	  fseek(fp,sizeof(char)*-1,SEEK_CUR);
 	  fscanf(fp,"%d%c",&rotulo,&aux);
 
 		if(aux=='-')
@@ -481,11 +485,12 @@ void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo)
 			percurso_largura(listaAdj,temp.rotulo,fifo);
 }
 
-double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS])
+double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
+		predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS])
 {
 	int *perm;
 	double *dista, nova_dista, menor_dista;
-	int i,j,indexOrigem,indexDestino,corrente,dc,cont=0;
+	int i,j,indexOrigem,indexDestino,atual,dc,cont=0;
 	int novaLinha;
 	indexOrigem=buscar_indice_nodo(*listaAdj,origemRotulo);
 	indexDestino=buscar_indice_nodo(*listaAdj,destinoRotulo);
@@ -507,27 +512,27 @@ double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecess
 	}
 	perm[indexOrigem]=TRUE;
 	dista[indexOrigem]=0;
-	corrente=indexOrigem;
-	while(corrente!=indexDestino)
+	atual=indexOrigem;
+	while(atual!=indexDestino)
 	{
 		cont++;
 		menor_dista=INFINITE;
-		dc = dista[corrente];
+		dc = dista[atual];
 		for(i=0;i<listaAdj->tam;i++)
 		{
 			if(perm[i]==FALSE)
 			{
-				nova_dista=dc+peso(*listaAdj,corrente,i,distancia);
-				novaLinha=linha[listaAdj->nodo[corrente]->rotulo-1][listaAdj->nodo[i]->rotulo-1];
+				nova_dista=dc+peso(*listaAdj,atual,i,distancia);
+				novaLinha=linha[listaAdj->nodo[atual]->rotulo-1][listaAdj->nodo[i]->rotulo-1];
 
 				if(nova_dista<dista[i])
 				{
-					if((precede[corrente].line!=-1)&&(precede[corrente].line!=novaLinha))
-						nova_dista+=2;
+					if((precede[atual].line!=-1)&&(precede[atual].line!=novaLinha))
+						nova_dista+=TRANSHIPMENT/(SPEED/3.6);
 					if(nova_dista<dista[i])
 					{
 						dista[i]=nova_dista;
-						precede[i].index=corrente;
+						precede[i].index=atual;
 						precede[i].line=novaLinha;
 					}
 				}
@@ -538,8 +543,77 @@ double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecess
 				}
 			}
 		}
-		corrente=j;
-		perm[corrente]=TRUE;
+		atual=j;
+		perm[atual]=TRUE;
+		if(cont>listaAdj->tam)
+			return -1;
+	}
+	menor_dista=dista[indexDestino];
+	free(dista);
+	free(perm);
+	return menor_dista;
+}
+
+double astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
+		predecessor *precede,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS])
+{
+	int *perm;
+	double *dista, nova_dista, menor_dista;
+	int i,j,indexOrigem,indexDestino,atual,dc,cont=0;
+	int novaLinha;
+	indexOrigem=buscar_indice_nodo(*listaAdj,origemRotulo);
+	indexDestino=buscar_indice_nodo(*listaAdj,destinoRotulo);
+
+	dista=NULL;
+	perm=NULL;
+
+	if (!(dista=(double*)malloc(sizeof(double)*(listaAdj->tam))))
+		error_m("Erro ao alocar memória.");
+	if (!(perm=(int*)malloc(sizeof(int)*(listaAdj->tam))))
+		error_m("Erro ao alocar memória.");
+
+	for(i=0;i<listaAdj->tam;i++)
+	{
+		dista[i]=INFINITE;
+		perm[i]=FALSE;
+		precede[i].index=-1;
+		precede[i].line=-1;
+	}
+	perm[indexOrigem]=TRUE;
+	dista[indexOrigem]=0;
+	atual=indexOrigem;
+	while(atual!=indexDestino)
+	{
+		cont++;
+		menor_dista=INFINITE;
+		dc = dista[atual];
+		for(i=0;i<listaAdj->tam;i++)
+		{
+			if(perm[i]==FALSE)
+			{
+				nova_dista=dc+peso(*listaAdj,atual,i,distancia);
+				novaLinha=linha[listaAdj->nodo[atual]->rotulo-1][listaAdj->nodo[i]->rotulo-1];
+
+				if(nova_dista<dista[i])
+				{
+					if((precede[atual].line!=-1)&&(precede[atual].line!=novaLinha))
+						nova_dista+=2;
+					if(nova_dista<dista[i])
+					{
+						dista[i]=nova_dista;
+						precede[i].index=atual;
+						precede[i].line=novaLinha;
+					}
+				}
+				if(dista[i]<menor_dista)
+				{
+					menor_dista=dista[i];
+					j=i;
+				}
+			}
+		}
+		atual=j;
+		perm[atual]=TRUE;
 		if(cont>listaAdj->tam)
 			return -1;
 	}
@@ -567,7 +641,7 @@ double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STAT
 	return 0;
 }
 
-int exibirMenorCaminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino)
+int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino)
 {
 	int aux,origemIndice,destinoIndice;
 	FILA* lifo; //Pilha para auxiliar na exibição do caminho

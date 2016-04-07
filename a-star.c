@@ -59,7 +59,7 @@ node* switch_to_closedset(node* n){
 	return &closedset[closedset_size - 1];
 }
 
-int astar(int* map, int map_width, int map_height, int start_x, int start_y, int goal_x, int goal_y, astar_result* result){
+int asstar(int* map, int map_width, int map_height, int start_x, int start_y, int goal_x, int goal_y, astar_result* result){
 	result->pathsize = closedset_size = openset_size = 0;
 	openset[openset_size++] = (node){ start_x, start_y, abs(start_x - goal_x) + abs(start_y - goal_y), 0, 0 };
 	while (openset_size > 0){

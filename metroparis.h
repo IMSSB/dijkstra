@@ -15,9 +15,11 @@
 
 #define FILE_STATIONS "estacoes.txt"
 #define FILE_DISTANCES "distancias.txt"
+#define FILE_REAL_DISTANCES "distancias_reais.txt"
 #define FILE_LINES "linhas.txt"
-#define SPEED 30
-#define NUM_STATIONS 14
+#define SPEED 30			// km/hora
+#define NUM_STATIONS 14		// MAX_NODOS
+#define TRANSHIPMENT 4 		// minutos
 #define TRUE 1
 #define FALSE 0
 #define INFINITE 99999999
@@ -26,25 +28,36 @@
 #define nl printf("\n");
 #define big_line printf("\n____________________________________________________________\n");
 
-typedef struct nodo {
+typedef struct nodo
+{
    int visited;
    int rotulo;
    int index;
-   double G, F, H;
+   double F, G, H;
    struct nodo *next;
 }NODO;
 
-typedef struct {
+typedef struct
+{
    NODO **nodo; //	é um vetor dinâmico com os ponteiros para os primeiros elementos das listas encadeadas.
    int tam; 	//	Tamanho do vetor listaAdj
 }LISTAADJ;
 
-typedef struct{
+typedef struct
+{
 	NODO* topo;
 	int tam;
 }FILA;
 
-typedef struct {
+typedef struct
+{
+	NODO **caminho;
+	double distancia;
+	int baldeacoes;
+}STAR_RESULT;
+
+typedef struct
+{
 	int index;
 	int line;
 }predecessor;
@@ -76,7 +89,6 @@ LISTAADJ* criar_lista_adj(void);
 //Insere numa lista encadeada. Recebe a referência do primeiro elemento da lista.
 int inserir_lista(NODO **lista,int rotulo,int indice);
 
-//Lê a lista de adjacência de um arquivo texto.
 int ler_estacoes(char* arquivo,LISTAADJ* listaAdj);
 
 int carregar_matriz_int(char* arquivo,int matriz[][NUM_STATIONS]);
@@ -88,7 +100,7 @@ void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS]);
-int exibirMenorCaminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);
+int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);
 
 //FUNÇÕES DE FILAS
 FILA* criar_fila(void);
