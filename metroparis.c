@@ -20,18 +20,16 @@ int main()
 int metro_paris()
 {
 	int origem=1,destino=1;
+	int horas=0,minutos=0,segundos=0;
 	int linha[NUM_STATIONS][NUM_STATIONS];
 	double distancia[NUM_STATIONS][NUM_STATIONS], distancia_real[NUM_STATIONS][NUM_STATIONS];
 	STAR_RESULT *AEstrela;
-	int horas,minutos,segundos;
-	//distancia[i][j] refere-se a distancia em linha reta entre o nó de rótulo [i+1] e o nó de rotulo[j+1]
 	LISTAADJ *listaAdj;
-	predecessor *precede;
 	if (!(AEstrela = (STAR_RESULT *)malloc(sizeof(STAR_RESULT))))
 		error_m("Erro ao alocar memória.");
 
 	listaAdj=criar_lista_adj();
-
+	//	Lendo os arquivos para o programa funcionar
 	if(!ler_estacoes(FILE_STATIONS,listaAdj))
 		error_m("Erro ao ler arquivo de estacões.");
 	if(!carregar_matriz_double(FILE_DISTANCES,distancia))
@@ -43,8 +41,6 @@ int metro_paris()
 
 	while(origem!=0)
 	{
-		exibir_lista_adj(*listaAdj);
-		pause;
 		printf("\n\nDigite a estação de origem: E");
 		scanf("%d",&origem);
 		if(!origem)
@@ -54,15 +50,7 @@ int metro_paris()
 		if(!destino)
 			return 1;
 
-		if (!(precede=(predecessor*)malloc((sizeof(predecessor)*listaAdj->tam))))
-			error_m("Erro ao alocar memória.");
-
 		astar(listaAdj,origem,destino,distancia,distancia_real,linha,AEstrela);
-		exibir_star_result(AEstrela);
-		pause;
-
-		printf("\ntempo: %lf, distancia: %lf\n",AEstrela->tempo,AEstrela->distancia);
-
 		pause;
 		if(AEstrela->tempo > 0)
 		{
@@ -77,8 +65,7 @@ int metro_paris()
 		else
 			printf("\n\nNão existe uma rota de E%d para E%d\n",origem,destino);
 
-		getc(stdin);
-		getc(stdin);
+		pause;
 		cls;
 	}
 	return 0;
@@ -94,13 +81,14 @@ void error_m(char *errormessage)
 void project_presentation()
 {
 	big_line;
-	formated_message("Metro de Paris");
+	formated_message("Algoritmo A* - Metro de Paris");
 	formated_message("Trabalho da Disciplina Algoritmos e Estrutura de Dados II");
 	formated_message("Professora: Ana Emilia de Melo Queiroz");
 	formated_message("Alunos:     Ricardo Valério Teixeira de Medeiros Silva");
 	formated_message("            Ruan de Medeiros Bahia");
 	formated_message("Calculando o trajeto mais rápido entre duas estações no ");
-	formated_message("Metro de Paris utilizando o algoritmo A* (A-Estrela).");
+	formated_message("Metro de Paris utilizando o algoritmo A* (A-Estrela), a");
+	formated_message("partir de pesos predefinidos e localização de linhas.");
 	big_line;
 
 	pause;
@@ -141,6 +129,41 @@ void exibir_lista_adj(LISTAADJ listaAdj){
 			if(aux!=NULL)
 				printf(", ");
 		}
+	}
+}
+void exibir_star_result(STAR_RESULT *result)
+{
+	int c;
+	printf("EXIBIR STAR_RESULT\n");
+	printf("STAR_RESULT - tempo: %lf\n",result->tempo);
+	printf("STAR_RESULT - distancia: %lf\n",result->distancia);
+	printf("STAR_RESULT - tamanho: %d\n",result->tam);
+	for (c=0;c<result->tam;c++)
+		exibir_nodo(&result->caminho[c]);
+}
+
+void exibir_nodo(NODO *nodo)
+{
+	printf("nodo->rotulo = %d\n",nodo->rotulo);
+	printf("nodo->index = %d\n",nodo->index);
+	printf("nodo->f = %lf\n",nodo->f);
+	printf("nodo->g = %lf\n",nodo->g);
+	printf("nodo->h = %lf\n",nodo->h);
+	printf("nodo->origin = %d\n",nodo->origin);
+	printf("nodo->next = %d\n",nodo->next);
+	printf("nodo->visited = %d\n",nodo->visited);
+}
+
+void exibir_lista(LISTA *lista)
+{
+	NODO *aux;
+	int c;
+	printf("\n\nEXIBINDO LISTA\n");
+	printf("lista->tam = %d\n",lista->tam);
+	for (c = 0, aux = lista->primeiro; aux ;aux = aux->next, c++)
+	{
+		printf("NODO %d\n",c);
+		exibir_nodo(aux);
 	}
 }
 
@@ -323,10 +346,8 @@ int carregar_matriz_int(char* arquivo,int matriz[][NUM_STATIONS])
 	if((fp=fopen(arquivo,"r"))==NULL)
 		return FALSE;
 	for(i=0;i<NUM_STATIONS;i++)
-	{
 		for(j=0;j<NUM_STATIONS;j++)
 			fscanf(fp,"%d%c",&(matriz[i][j]),&aux);
-	}
 	fclose(fp);
 
 	return TRUE;
@@ -340,150 +361,11 @@ int carregar_matriz_double(char* arquivo,double matriz[][NUM_STATIONS])
 	if((fp=fopen(arquivo,"r"))==NULL)
 		return FALSE;
 	for(i=0;i<NUM_STATIONS;i++)
-	{
 		for(j=0;j<NUM_STATIONS;j++)
-		{
 			fscanf(fp,"%lf%c",&(matriz[i][j]),&aux);
-			printf("lido: %lf\n",matriz[i][j]);
-		}
-	}
 	fclose(fp);
 
 	return TRUE;
-}
-
-
-FILA* criar_fila(void)
-{
-	FILA *aux;
-	if (!(aux=(FILA*)malloc(sizeof(FILA))))
-		error_m("Erro ao alocar memória.");
-	aux->topo=NULL;
-	aux->tam=0;
-	return aux;
-}
-
-void destruir_fila(FILA **fila)
-{
-	NODO *ant,*next;
-
-	if((*fila)->topo!=NULL)
-	{
-		ant=(*fila)->topo;
-		next=ant->next;
-		while(next!=NULL)
-		{
-			free(ant);
-			ant=next;
-			next=next->next;
-		}
-		free(ant);
-	}
-	free(*fila);
-	*fila=NULL;
-}
-void empilhar(FILA *lifo,NODO *nodo)
-{
-	NODO *aux;
-
-	if (!(aux=(NODO*)malloc(sizeof(NODO))))
-		error_m("Erro ao alocar memória.");
-	aux->rotulo=nodo->rotulo;
-	aux->index=nodo->index;
-	aux->visited=nodo->visited;
-	aux->next=lifo->topo;
-
-	lifo->topo=aux;
-	(lifo->tam)++;
-}
-
-void enfileirar(FILA *fifo,NODO *nodo)
-{
-	NODO *aux,*novo;
-
-	if(!(novo=(NODO*)malloc(sizeof(NODO))))
-			error_m("Erro ao alocar memória.");
-
-	novo->rotulo=nodo->rotulo;
-	novo->index=nodo->index;
-	novo->visited=nodo->visited;
-	novo->next=NULL;
-
-	if((fifo->topo)==NULL)
-		fifo->topo=novo;
-	else
-	{
-		aux=fifo->topo;
-		while((aux->next)!=NULL)
-			aux=aux->next;
-		aux->next=novo;
-	}
-	(fifo->tam)++;
-}
-
-NODO desenfileirar(FILA *fila)
-{
-	NODO *aux,temp;
-
-	if((fila->topo)!=NULL)
-	{
-		aux=fila->topo;
-		temp=*aux;
-
-		fila->topo=fila->topo->next;
-		(fila->tam)--;
-		free(aux);
-		return temp;
-	}
-	temp.rotulo=-1;
-	return temp;
-
-}
-void exibir_fila(FILA fila)
-{
-	NODO* aux;
-
-	aux=fila.topo;
-	while(aux!=NULL)
-	{
-		printf("%d  ",aux->rotulo);
-		aux=aux->next;
-	}
-}
-
-void exibir_fila_invertida(NODO *topo)
-{
-	if(topo!=NULL)
-	{
-		exibir_fila_invertida(topo->next);
-		printf("%d  ",topo->rotulo);
-	}
-}
-
-void copiar_fila(FILA *origem,FILA **destino)
-{
-	NODO* aux;
-	FILA *lifoTemp;
-
-	destruir_fila(destino);
-	*destino=criar_fila();
-	lifoTemp=criar_fila();
-	if((origem->topo)!=NULL)
-	{
-		aux=origem->topo;
-		while(aux!=NULL)
-		{
-			empilhar(lifoTemp,aux);
-			aux=aux->next;
-		}
-		aux=lifoTemp->topo;
-		while(aux!=NULL)
-		{
-			empilhar(*destino,aux);
-			aux=aux->next;
-		}
-	}
-	destruir_fila(&lifoTemp);
 }
 
 int esta_na_lista(LISTA *lista,NODO *nodo)
@@ -499,10 +381,8 @@ NODO *encontrar_menor_valor_f(LISTA *lista)
 {
 	NODO *aux,*menor = lista->primeiro;
 	double min = lista->primeiro->f;
-	printf("->f=%lf\n",min);
 	for (aux = lista->primeiro->next;aux; aux = aux->next)
 	{
-		printf("->f=%lf\n",aux->f);
 		if (aux->f < min)
 		{
 			min = aux->f;
@@ -517,28 +397,22 @@ void trocar_nodo_de_lista(NODO *nodo, LISTA *de, LISTA *para)
 	NODO *aux, *ant;
 	for (ant = aux = de->primeiro; aux != nodo ; aux = aux->next)
 		ant = aux;
-	printf("TRETA1\n");
 	if (!(--de->tam))
 		de->primeiro = NULL;
 	else if (ant == aux)
 		de->primeiro = ant->next;
 	else
 		ant->next = aux->next;
-	printf("TRETA2\n");
 	if (para->tam)
 	{
-		printf("TRETA3\n");
 		aux = para->primeiro;
-		printf("TRETA3.2\n");
 		while(aux->next)
 			aux=aux->next;
-		printf("TRETA3.3\n");
 		aux->next=nodo;
 	}
 	else
 		para->primeiro = nodo;
 	nodo->next = NULL;
-	printf("TRETA4\n");
 	para->tam++;
 
 	return;
@@ -554,15 +428,13 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 	result->tempo = result->distancia = 0;
 	result->tam = 0;
 
-	printf("TESTE1\n");
-
 	indice_origem=buscar_indice_nodo(*listaAdj,origemRotulo);
 	indice_destino=buscar_indice_nodo(*listaAdj,destinoRotulo);
 
 	inserir_lista(abertos,origemRotulo,indice_origem,NULL,peso(*listaAdj,indice_origem,indice_destino,distancia)/SPEEDM,0,peso(*listaAdj,indice_origem,indice_destino,distancia)/SPEEDM);
 
 	linhas = linhas_rotulo(linha,destinoRotulo);	//	Linhas usadas na comparação para otimização heurística
-	printf("TESTE2\n");
+
 	while (abertos->tam > 0)
 	{
 		int i;
@@ -572,38 +444,29 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 		{
 			NODO temp;
 			result->caminho[result->tam++] = *atual;
-			while (atual->rotulo != origemRotulo)
+			while (atual->rotulo != origemRotulo)	//	Guardando informação na lista ao contrário
 				result->caminho[result->tam++] = *atual = *atual->origin;
 
-			for (i = 0;i<result->tam /2;i++)
+			for (i = 0;i<result->tam /2;i++)	//	Invertendo a lista
 			{
 				temp = result->caminho[i];
 				result->caminho[i] = result->caminho[result->tam - 1 - i];
 				result->caminho[result->tam - 1 - i] = temp;
 			}
-			for (i = 1;i<result->tam; i++)
+			for (i = 1;i<result->tam; i++)	//	Definindo a distância real entre as estações
 				result->distancia += peso(*listaAdj,result->caminho[i].origin->index,result->caminho[i].index,distancia_real);
 
 			result->tempo = result->caminho[result->tam-1].g;
-			printf("\n\n\n\n\n\n\nTEMPO: %lf\n\n\n",result->tempo);
-			pause;
+
 			return 1;
 		}
-		printf("TESTE3 =\n");
-		exibir_lista(abertos);
-		pause;
-		printf("é\n");
-		exibir_lista(fechados);
-		pause;
-		printf("HEHEHEHEH-------------------------\n");exibir_nodo(atual);
+
 		trocar_nodo_de_lista(atual, abertos, fechados);
-		printf("TESTE4\n");
+
 		for(aux = listaAdj->nodo[atual->index]->next; aux;aux = aux->next)
 		{
-			printf("TESTE5\n");
 			if (esta_na_lista(fechados,aux))
 				continue;
-			printf("TESTE6\n");
 			baldeou = heuri = 0;
 			linha_atual = linha[atual->rotulo-1][aux->rotulo-1];
 			if (atual->origin)
@@ -611,30 +474,18 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 				if(linha[atual->origin->rotulo-1][atual->rotulo-1] != linha_atual)
 					baldeou = 1;
 			}
-			printf("TESTE7\n");
 			if (linha_atual != linhas[0] && linha_atual != linhas[1])
 				heuri = 1;	//	Verifica se a linha atual é uma das linhas que passam pelo destino
 
-			if (!esta_na_lista(abertos,aux))
+			if (!esta_na_lista(abertos,aux))	//	Caso não esteja na lista de nós abertos
 			{
 				h = (peso(*listaAdj,aux->index,indice_destino,distancia)/SPEEDM) + (heuri?TRANSHIPMENT:0);
 				g = atual->g + (peso(*listaAdj,atual->index,aux->index,distancia_real)/SPEEDM) + (baldeou?TRANSHIPMENT:0);
 				f = g + h;
-				if (aux->rotulo == 9)
-				{
-					exibir_lista(abertos);
-					pause;
-
-				}
-				printf("aux=%d, aux->index=%d, aux->rotulo=%d, indice_destino=%d",aux, aux->index,aux->rotulo,indice_destino);
-				printf("f = %lf  g= %lf  h= %lf \n",f,g,h);
-				printf("\nheuri=%d,baldeou=%d\n",heuri,baldeou);
-
 				inserir_lista(abertos,aux->rotulo,aux->index,atual,f,g,h);
-				printf("TESTE8\n");
 			}
-			else
-			{	printf("TESTE9\n");
+			else	//	Caso já esteja na lista de nós abertos
+			{
 				NODO *aux2 = abertos->primeiro;
 				while (aux2->rotulo != aux->rotulo && aux2->next)
 					aux2 = aux2->next;
@@ -648,48 +499,13 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 					aux2->f = aux2->g + aux2->h;
 				}
 			}
-			pause;
 		}
 	}
 	return 0;
 	printf("TESTE - FINALLL\n");
 }
 
-void exibir_star_result(STAR_RESULT *result)
-{
-	int c;
-	printf("EXIBIR STAR_RESULT\n");
-	printf("STAR_RESULT - tempo: %lf\n",result->tempo);
-	printf("STAR_RESULT - distancia: %lf\n",result->distancia);
-	printf("STAR_RESULT - tamanho: %d\n",result->tam);
-	for (c=0;c<result->tam;c++)
-		exibir_nodo(&result->caminho[c]);
-}
 
-void exibir_nodo(NODO *nodo)
-{
-	printf("nodo->rotulo = %d\n",nodo->rotulo);
-	printf("nodo->index = %d\n",nodo->index);
-	printf("nodo->f = %lf\n",nodo->f);
-	printf("nodo->g = %lf\n",nodo->g);
-	printf("nodo->h = %lf\n",nodo->h);
-	printf("nodo->origin = %d\n",nodo->origin);
-	printf("nodo->next = %d\n",nodo->next);
-	printf("nodo->visited = %d\n",nodo->visited);
-}
-
-void exibir_lista(LISTA *lista)
-{
-	NODO *aux;
-	int c;
-	printf("\n\nEXIBINDO LISTA\n");
-	printf("lista->tam = %d\n",lista->tam);
-	for (c = 0, aux = lista->primeiro; aux ;aux = aux->next, c++)
-	{
-		printf("NODO %d\n",c);
-		exibir_nodo(aux);
-	}
-}
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
 {
@@ -710,11 +526,10 @@ double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STAT
 
 int exibir_trajeto_mais_rapido(STAR_RESULT *result,int linha[][NUM_STATIONS])
 {
-	NODO *temp;
 	int c, linha_atual, proxima_linha;
 	char nomeLinha[20];
 
-	printf("\n\nPartindo da estação E%d ",result->caminho[0].rotulo);
+	printf("Partindo da estação E%d ",result->caminho[0].rotulo);
 	linha_atual = linha[result->caminho[0].rotulo -1][result->caminho[1].rotulo -1];
 	nome_da_linha(linha_atual,nomeLinha);
 	printf("pegue a linha %s.\n",nomeLinha);
@@ -737,6 +552,7 @@ int exibir_trajeto_mais_rapido(STAR_RESULT *result,int linha[][NUM_STATIONS])
 		else
 			printf(".\n");
 	}
+	printf("Chegando então ao destino escolhido!");
 
 	return 0;
 }
@@ -758,16 +574,17 @@ void nome_da_linha(int linha,char *nome)
 			break;
 	}
 }
-int* linhas_rotulo(int linha[][NUM_STATIONS], int destinoRotulo)
-{
+
+int* linhas_rotulo(int linha[][NUM_STATIONS], int rotulo)
+{	//	FUNÇÃO AUXILIAR PARA A HEURÍSTICA UTILIZADA
 	int c, *linhas,v=0,aux;
 	if (!(linhas = (int *) malloc(sizeof(int)*2)))
 		error_m("Erro ao alocar memória.");
-
+	//	Retorna um vetor com as linhas que cruzam o nó
 	linhas[0] = linhas[1] = 0;
 	for (c=0;c < NUM_STATIONS;c++)
 	{
-		aux = linha[destinoRotulo -1][c];
+		aux = linha[rotulo -1][c];
 		if (aux > 0)
 		{
 			if (!v)

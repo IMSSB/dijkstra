@@ -29,15 +29,6 @@
 #define nl printf("\n");
 #define big_line printf("\n____________________________________________________________\n");
 
-/*typedef struct nodo
-{
-   int visited;
-   int rotulo;
-   int index;
-   double f,g,h;
-   struct nodo *next;
-}NODO;*/;
-
 typedef struct nodo
 {
    int rotulo;
@@ -62,23 +53,11 @@ typedef struct
 
 typedef struct
 {
-	NODO *topo;
-	int tam;
-}FILA;
-
-typedef struct
-{
 	NODO caminho[NUM_STATIONS];
 	double distancia;
 	double tempo;
 	int tam;
 }STAR_RESULT;
-
-typedef struct
-{
-	int index;
-	int line;
-}predecessor;
 
 int metro_paris();
 
@@ -90,7 +69,7 @@ void formated_message(char *string);
 //Se não encontrar retorna -1.
 int buscar_indice_nodo(LISTAADJ listaAdj,int rotulo);
 
-//Exibe a lista de adjacência na tela
+//	FUNÇÕES PARA EXIBIR INFORMAÇÕES DE ESTRUTURAS
 void exibir_lista_adj(LISTAADJ listaAdj);
 void exibir_star_result(STAR_RESULT *result);
 void exibir_nodo(NODO *nodo);
@@ -110,28 +89,12 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj);
 int carregar_matriz_int(char* arquivo,int matriz[][NUM_STATIONS]);
 int carregar_matriz_double(char* arquivo,double matriz[][NUM_STATIONS]);
 
-double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS],STAR_RESULT *result);
 int esta_na_lista(LISTA *lista,NODO *nodo);
 NODO *encontrar_menor_valor_f(LISTA *lista);
 void trocar_nodo_de_lista(NODO *nodo, LISTA *de, LISTA *para);
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS]);
-int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);
-
-//FUNÇÕES DE FILAS
-FILA* criar_fila(void);
-void destruir_fila(FILA **fila);
-NODO desenfileirar(FILA *fila);
-void copiar_fila(FILA *origem,FILA **destino);
-void exibir_fila(FILA fila);
-void exibir_fila_invertida(NODO *topo);
-
-//LIFO
-void empilhar(FILA *lifo,NODO *nodo);
-
-//FIFO
-void enfileirar(FILA *fifo,NODO *nodo);
 
 void nome_da_linha(int linha,char *nome);
 
