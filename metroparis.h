@@ -18,11 +18,12 @@
 #define FILE_REAL_DISTANCES "distancias_reais.txt"
 #define FILE_LINES "linhas.txt"
 #define SPEED 30			// km/hora
+#define SPEEDM SPEED/60.0   //km/min
 #define NUM_STATIONS 14		// MAX_NODOS
-#define TRANSHIPMENT 4 		// minutos
+#define TRANSHIPMENT 10 		// minutos
 #define TRUE 1
 #define FALSE 0
-#define INFINITE 99999999
+#define INFINITE 9999999999
 #define pause printf("\nDigite algo para continuar\n"); getchar();
 #define cls system("CLS || clear");
 #define nl printf("\n");
@@ -33,7 +34,6 @@ typedef struct nodo
    int visited;
    int rotulo;
    int index;
-   double F, G, H;
    struct nodo *next;
 }NODO;
 
@@ -57,9 +57,10 @@ typedef struct
 
 typedef struct
 {
-	NODO **caminho;
+	FILA *caminho;
 	double distancia;
 	int baldeacoes;
+
 }STAR_RESULT;
 
 typedef struct
@@ -104,7 +105,7 @@ void percurso_profundidade(LISTAADJ *listaAdj,int origem);
 void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 
 double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
-double astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,NODO **lista_aberta, NODO **lista_fechada,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS]);
+void astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS],STAR_RESULT *result);
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS]);
 int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);
@@ -123,7 +124,11 @@ void empilhar(FILA *lifo,NODO *nodo);
 //FIFO
 void enfileirar(FILA *fifo,NODO *nodo);
 
-void nomeDaLinha(int linha,char *nome);
+void nome_da_linha(int linha,char *nome);
+
+
+int* linhas_rotulo(int linha[][NUM_STATIONS], int destinoRotulo);
+
 
 //---------------------------------------------------------------------------
 
