@@ -684,6 +684,24 @@ void astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distanci
 	result->distancia=peso_acumulado;
 	printf("TESTE7\n");
 }
+
+double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
+{
+	int rotuloOrigem,rotuloDestino;
+	double d;
+	if(origem!=destino)
+	{
+		rotuloOrigem=listaAdj.nodo[origem]->rotulo;
+		rotuloDestino=listaAdj.nodo[destino]->rotulo;
+
+		d = distancia[rotuloOrigem-1][rotuloDestino-1];
+		if(d==-1)
+			return INFINITE;
+		return d;
+	}
+	return 0;
+}
+
 /*
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
 {
@@ -702,23 +720,6 @@ double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STAT
 	}
 	return 0;
 }*/
-
-double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
-{
-	int rotuloOrigem,rotuloDestino;
-	double d;
-	if(origem!=destino)
-	{
-		rotuloOrigem=listaAdj.nodo[origem]->rotulo;
-		rotuloDestino=listaAdj.nodo[destino]->rotulo;
-
-		d = distancia[rotuloOrigem-1][rotuloDestino-1];
-		if(d==-1)
-			return INFINITE;
-		return d;
-	}
-	return 0;
-}
 
 int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino)
 {
