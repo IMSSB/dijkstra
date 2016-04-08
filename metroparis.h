@@ -20,7 +20,7 @@
 #define SPEED 30			// km/hora
 #define SPEEDM (SPEED/60.0)   //km/min
 #define NUM_STATIONS 14		// MAX_NODOS
-#define TRANSHIPMENT 4 		// minutos
+#define TRANSHIPMENT 120 		// minutos
 #define TRUE 1
 #define FALSE 0
 #define INFINITE 9999999999
@@ -87,13 +87,6 @@ void error_m(char *errormessage);
 void project_presentation();
 void formated_message(char *string);
 
-void zerar_visitados(LISTAADJ listaAdj);
-
-int existe_arco(LISTAADJ listaAdj,int deRotulo,int paraRotulo);
-
-//retorna o rótulo do primeiro nó disponível a partir de "origem".
-//Retorna -1 caso não encontre nenhum nó disponível.
-int encontrar_qualquer_destino(LISTAADJ listaAdj,int origemRotulo);
 
 //Retorna a posição do nó cabeça de lista no vetor da lista de adjacência.
 //Se não encontrar retorna -1.
@@ -101,11 +94,18 @@ int buscar_indice_nodo(LISTAADJ listaAdj,int rotulo);
 
 //Exibe a lista de adjacência na tela
 void exibir_lista_adj(LISTAADJ listaAdj);
+void exibir_star_result(STAR_RESULT *result);
+void exibir_nodo(NODO *nodo);
+void exibir_lista(LISTA *lista);
+int exibir_trajeto_mais_rapido(STAR_RESULT *resultado);
 
 LISTAADJ* criar_lista_adj(void);
-
-//Insere numa lista encadeada. Recebe a referência do primeiro elemento da lista.
 int inserir_lista_adj(NODO **lista,int rotulo,int indice);
+
+LISTA* criar_lista();
+void retirar_lista(LISTA *lista, int pos);
+void destruir_lista(LISTA *lista);
+int inserir_lista(LISTA *lista,int rotulo,int index,NODO *origin,double f, double g, double h);
 
 int ler_estacoes(char* arquivo,LISTAADJ* listaAdj);
 
@@ -117,9 +117,9 @@ void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 
 double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS],STAR_RESULT *result);
-void exibir_star_result(STAR_RESULT *result);
-void exibir_nodo(NODO *nodo);
-void exibir_lista(LISTA *lista);
+int esta_na_lista(LISTA *lista,NODO *nodo);
+NODO *encontrar_menor_valor_f(LISTA *lista);
+void trocar_nodo_de_lista(NODO *nodo, LISTA *de, LISTA *para);
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS]);
 int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int destino);
@@ -128,9 +128,9 @@ int exibir_menor_caminho(LISTAADJ *listaAdj,predecessor *precede,int origem,int 
 FILA* criar_fila(void);
 void destruir_fila(FILA **fila);
 NODO desenfileirar(FILA *fila);
+void copiar_fila(FILA *origem,FILA **destino);
 void exibir_fila(FILA fila);
 void exibir_fila_invertida(NODO *topo);
-void copiar_fila(FILA *origem,FILA **destino);
 
 //LIFO
 void empilhar(FILA *lifo,NODO *nodo);

@@ -44,7 +44,7 @@ typedef struct astar_result{
 // map : pointer to a 2D int array (you can change int for short, char or other to suit your needs). 0 : walkable, anything > 0 : unwalkable. See astar.c line 82 (last condition) to change which values are considered walkable or not.
 // result : pointer to a structure that holds the results of the pathfinding. Read result->path[i] (i from 0 to result->pathsize-1) to get your path.
 // Returns 1 if a path was found, 0 if not.
-int astar(int* map, int map_width, int map_height, int start_x, int start_y, int goal_x, int goal_y, astar_result* result);
+int aastar(int* map, int map_width, int map_height, int start_x, int start_y, int goal_x, int goal_y, astar_result* result);
 
 
 #endif

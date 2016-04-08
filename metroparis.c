@@ -100,7 +100,8 @@ void project_presentation()
 	formated_message("Professora: Ana Emilia de Melo Queiroz");
 	formated_message("Alunos:     Ricardo Valério Teixeira de Medeiros Silva");
 	formated_message("            Ruan de Medeiros Bahia");
-	formated_message("Calculando o menor caminho entre duas estações no Metro de Paris.");
+	formated_message("Calculando o trajeto mais rápido entre duas estações no ");
+	formated_message("Metro de Paris utilizando o algoritmo A* (A-Estrela).");
 	big_line;
 
 	pause;
@@ -113,48 +114,6 @@ void formated_message(char *string){
 				"\\\\\\\\\t",
 				string,
 				"\t\\\\\\\\");
-}
-
-int encontrar_qualquer_destino(LISTAADJ listaAdj,int origemRotulo)
-{
-	int temp;
-	NODO *aux;
-
-	if((temp=buscar_indice_nodo(listaAdj,origemRotulo))==-1)
-		return -1;
-
-	aux=listaAdj.nodo[temp]->next; //Segundo nó da lista de adjacência
-
-	while(aux!=NULL)
-	{
-		temp=buscar_indice_nodo(listaAdj,aux->rotulo);
-		if(listaAdj.nodo[temp]->visited==FALSE)
-			return listaAdj.nodo[temp]->rotulo;
-		aux=aux->next;
-	}
-	return -1;
-}
-
-void zerar_visitados(LISTAADJ listaAdj)
-{
-	int i;
-	for(i=0;i<listaAdj.tam;i++)
-		listaAdj.nodo[i]->visited=FALSE;
-}
-
-int existe_arco(LISTAADJ listaAdj,int deRotulo,int paraRotulo)
-{
-	int posicao;
-	NODO* aux;
-
-	if((posicao=buscar_indice_nodo(listaAdj,deRotulo))<0)
-		return FALSE;
-	aux=listaAdj.nodo[posicao]->next;
-	while((aux!=NULL)&&(aux->rotulo!=paraRotulo))
-		aux=aux->next;
-	if(aux!=NULL)
-		return TRUE;
-	return FALSE;
 }
 
 int buscar_indice_nodo(LISTAADJ listaAdj,int rotulo)
@@ -573,155 +532,6 @@ void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo)
 			percurso_largura(listaAdj,temp.rotulo,fifo);
 }
 
-double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,
-		predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS])
-{
-	int *perm;
-	double *dista, nova_dista, menor_dista;
-	int i,j,indexOrigem,indexDestino,atual,dc,cont=0;
-	int novaLinha;
-	indexOrigem=buscar_indice_nodo(*listaAdj,origemRotulo);
-	indexDestino=buscar_indice_nodo(*listaAdj,destinoRotulo);
-
-	dista=NULL;
-	perm=NULL;
-
-	if (!(dista=(double*)malloc(sizeof(double)*(listaAdj->tam))))
-		error_m("Erro ao alocar memória.");
-	if (!(perm=(int*)malloc(sizeof(int)*(listaAdj->tam))))
-		error_m("Erro ao alocar memória.");
-
-	for(i=0;i<listaAdj->tam;i++)
-	{
-		dista[i]=INFINITE;
-		perm[i]=FALSE;
-		precede[i].index=-1;
-		precede[i].line=-1;
-	}
-	perm[indexOrigem]=TRUE;
-	dista[indexOrigem]=0;
-	atual=indexOrigem;
-	while(atual!=indexDestino)
-	{
-		cont++;
-		menor_dista=INFINITE;
-		dc = dista[atual];
-		for(i=0;i<listaAdj->tam;i++)
-		{
-			if(perm[i]==FALSE)
-			{
-				nova_dista=dc+peso(*listaAdj,atual,i,distancia);
-				novaLinha=linha[listaAdj->nodo[atual]->rotulo-1][listaAdj->nodo[i]->rotulo-1];
-
-				if(nova_dista<dista[i])
-				{
-					if((precede[atual].line!=-1)&&(precede[atual].line!=novaLinha))
-						nova_dista+=TRANSHIPMENT/(SPEED/3.6);
-					if(nova_dista<dista[i])
-					{
-						dista[i]=nova_dista;
-						precede[i].index=atual;
-						precede[i].line=novaLinha;
-					}
-				}
-				if(dista[i]<menor_dista)
-				{
-					menor_dista=dista[i];
-					j=i;
-				}
-			}
-		}
-		atual=j;
-		perm[atual]=TRUE;
-		if(cont>listaAdj->tam)
-			return -1;
-	}
-	menor_dista=dista[indexDestino];
-	free(dista);
-	free(perm);
-	return menor_dista;
-}
-
-/*void astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS],STAR_RESULT *result)
-{
-	int indice_atual,indice_origem,indice_destino, *linhas;
-	int i, baldeou = 0, linha_atual,Mlinha_atual, linha_anterior=-1,relaxou,Imenor_peso,Rmenor_peso;
-	double peso_acumulado=0,peso_atual,menor_peso=INFINITE,peso_relax,Mpeso_relax;
-	NODO *x, *aux;
-	result->baldeacoes = 0;
-	result->distancia = 0;
-	result->caminho = criar_fila();
-
-	printf("TESTE1\n");
-
-	indice_origem=buscar_indice_nodo(*listaAdj,origemRotulo);
-	indice_destino=buscar_indice_nodo(*listaAdj,destinoRotulo);
-
-	printf("TESTE2\n");
-	for(indice_atual=indice_origem ; indice_atual-indice_destino ;menor_peso=INFINITE)
-	{
-		printf("TESTE3\n");
-		for(i=0, aux = listaAdj->nodo[indice_atual];!i || aux;i++,aux = aux->next)//Lazy verification
-		{	printf("TESTE3.1 - i = %d\n",i);
-			printf("TESTE3.2 - REL: %d, IND_A: %d, ROT: %d\n",relaxou,indice_atual,aux->rotulo);
-			relaxou=aux->index;
-			printf("TESTE3.2 - REL: %d, IND_A: %d, ROT: %d\n",relaxou,indice_atual,aux->rotulo);
-			peso_atual=peso_relax=peso(*listaAdj,relaxou,indice_atual,distancia_real);
-			printf("TESTE3.3 - peso_atual = %lf\n",peso_atual);
-			//Estimação Heurística
-			peso_atual+=peso(*listaAdj,relaxou,indice_destino,distancia);
-			printf("TESTE3.4\n");
-			peso_atual/=SPEEDM;
-
-			printf("TESTE4.0 - peso_atual = %lf\n",peso_atual);
-			printf("TESTE4\n");
-			linha_atual=linha[listaAdj->nodo[indice_atual]->rotulo - 1][aux->rotulo - 1];
-			if(linha_anterior >= 0 && linha_atual != linha_anterior)
-				peso_atual+=TRANSHIPMENT;
-
-			printf("TTESTE4.01 - destinoRotulo = %d\n",destinoRotulo);
-			linhas = linhas_rotulo(linha,destinoRotulo);
-			if (linha_atual != linhas[0] && linha_atual != linhas[1])
-				peso_atual+=TRANSHIPMENT;
-
-			printf("TESTE4.1 - peso_atual = %lf, linha_atual = %d, linhas[0] = %d, linhas[1] = %d\n",peso_atual,linha_atual,linhas[0],linhas[1]);
-			if(i && !listaAdj->nodo[aux->index]->visited && peso_atual<menor_peso)
-			{
-				menor_peso=peso_atual;
-				Imenor_peso=aux->index;
-				Rmenor_peso=aux->rotulo;
-				Mpeso_relax=peso_relax;
-				Mlinha_atual=linha_atual;
-				if(linha_anterior >= 0 && linha_atual != linha_anterior)
-					baldeou=1;
-				else
-					baldeou=0;
-			}
-			printf("TESTE5\n");
-		}
-		printf("TESTE5.1\n");
-		pause;
-		listaAdj->nodo[indice_atual]->visited = TRUE;
-		indice_atual=Imenor_peso;
-		printf("TESTE5.2 Imenor_peso: %d\n",Imenor_peso);
-		peso_acumulado+=Mpeso_relax;
-		x = (NODO*)malloc(sizeof(NODO));
-		linha_anterior=Mlinha_atual;
-		if(baldeou)
-		 	 result->baldeacoes++;
-		baldeou =0;
-		printf("TESTE6\n");
-		x->index=indice_atual;
-		x->next=NULL;
-		x->rotulo=Rmenor_peso;
-		x->visited=TRUE;// Creio que será desnecessário no A*
-		enfileirar((result->caminho),x);
-	}
-	result->distancia=peso_acumulado;
-	printf("TESTE7\n");
-}
-*/;
-
 int esta_na_lista(LISTA *lista,NODO *nodo)
 {
 	NODO *aux;
@@ -747,6 +557,7 @@ NODO *encontrar_menor_valor_f(LISTA *lista)
 	}
 	return menor;
 }
+
 void trocar_nodo_de_lista(NODO *nodo, LISTA *de, LISTA *para)
 {
 	NODO *aux, *ant;
@@ -883,6 +694,7 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 	return 0;
 	printf("TESTE - FINALLL\n");
 }
+
 void exibir_star_result(STAR_RESULT *result)
 {
 	int c;
@@ -904,6 +716,7 @@ void exibir_nodo(NODO *nodo)
 	printf("nodo->next = %d\n",nodo->next);
 	printf("nodo->visited = %d\n",nodo->visited);
 }
+
 void exibir_lista(LISTA *lista)
 {
 	NODO *aux;
@@ -916,25 +729,6 @@ void exibir_lista(LISTA *lista)
 		exibir_nodo(aux);
 	}
 }
-
-/*
-double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
-{
-	NODO* aux;
-	int rotuloOrigem,rotuloDestino;
-	if(origem!=destino)
-	{
-		aux=listaAdj.nodo[origem]->next;
-		while((aux!=NULL)&&((aux->index)!=destino))
-			aux=aux->next;
-		if(aux==NULL)
-			return INFINITE;
-		rotuloOrigem=listaAdj.nodo[origem]->rotulo;
-		rotuloDestino=listaAdj.nodo[destino]->rotulo;
-		return distancia[rotuloOrigem-1][rotuloDestino-1];
-	}
-	return 0;
-}*/;
 
 double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STATIONS])
 {
@@ -950,6 +744,11 @@ double peso(LISTAADJ listaAdj,int origem,int destino,double distancia[][NUM_STAT
 			return INFINITE;
 		return d;
 	}
+	return 0;
+}
+
+int exibir_trajeto_mais_rapido(STAR_RESULT *resultado)
+{
 	return 0;
 }
 
