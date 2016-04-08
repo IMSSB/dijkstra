@@ -755,6 +755,8 @@ void trocar_nodo_de_lista(NODO *nodo, LISTA *de, LISTA *para)
 	printf("TRETA1\n");
 	if (!(--de->tam))
 		de->primeiro = NULL;
+	else if (ant == aux)
+		de->primeiro = ant->next;
 	else
 		ant->next = aux->next;
 	printf("TRETA2\n");
@@ -822,6 +824,7 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 		printf("é\n");
 		exibir_lista(fechados);
 		pause;
+		printf("HEHEHEHEH-------------------------\n");exibir_nodo(atual);
 		trocar_nodo_de_lista(atual, abertos, fechados);
 		printf("TESTE4\n");
 		for(aux = listaAdj->nodo[atual->index]->next; aux;aux = aux->next)
@@ -846,7 +849,13 @@ int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia
 				h = (peso(*listaAdj,aux->index,indice_destino,distancia)/SPEEDM) + (heuri?TRANSHIPMENT:0);
 				g = atual->g + (peso(*listaAdj,atual->index,aux->index,distancia_real)/SPEEDM) + (baldeou?TRANSHIPMENT:0);
 				f = g + h;
-				printf("aux=%d, aux->index=%d, indice_destino=%d",aux, aux->index,indice_destino);
+				if (aux->rotulo == 9)
+				{
+					exibir_lista(abertos);
+					pause;
+
+				}
+				printf("aux=%d, aux->index=%d, aux->rotulo=%d, indice_destino=%d",aux, aux->index,aux->rotulo,indice_destino);
 				printf("f = %lf  g= %lf  h= %lf \n",f,g,h);
 				printf("\nheuri=%d,baldeou=%d\n",heuri,baldeou);
 
@@ -900,7 +909,7 @@ void exibir_lista(LISTA *lista)
 	NODO *aux;
 	int c;
 	printf("\n\nEXIBINDO LISTA\n");
-	printf("lista->tam = %d",lista->tam);
+	printf("lista->tam = %d\n",lista->tam);
 	for (c = 0, aux = lista->primeiro; aux ;aux = aux->next, c++)
 	{
 		printf("NODO %d\n",c);
