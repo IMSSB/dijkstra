@@ -70,7 +70,7 @@ typedef struct
 {
 	NODO caminho[NUM_STATIONS];
 	double distancia;
-	int baldeacoes;
+	double tempo;
 	int tam;
 }STAR_RESULT;
 
@@ -80,13 +80,11 @@ typedef struct
 	int line;
 }predecessor;
 
-
 int metro_paris();
 
 void error_m(char *errormessage);
 void project_presentation();
 void formated_message(char *string);
-
 
 //Retorna a posição do nó cabeça de lista no vetor da lista de adjacência.
 //Se não encontrar retorna -1.
@@ -97,7 +95,7 @@ void exibir_lista_adj(LISTAADJ listaAdj);
 void exibir_star_result(STAR_RESULT *result);
 void exibir_nodo(NODO *nodo);
 void exibir_lista(LISTA *lista);
-int exibir_trajeto_mais_rapido(STAR_RESULT *resultado);
+int exibir_trajeto_mais_rapido(STAR_RESULT *resultado,int linha[][NUM_STATIONS]);
 
 LISTAADJ* criar_lista_adj(void);
 int inserir_lista_adj(NODO **lista,int rotulo,int indice);
@@ -111,9 +109,6 @@ int ler_estacoes(char* arquivo,LISTAADJ* listaAdj);
 
 int carregar_matriz_int(char* arquivo,int matriz[][NUM_STATIONS]);
 int carregar_matriz_double(char* arquivo,double matriz[][NUM_STATIONS]);
-
-void percurso_profundidade(LISTAADJ *listaAdj,int origem);
-void percurso_largura(LISTAADJ *listaAdj,int origemRotulo, FILA *fifo);
 
 double dijkstra(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,	predecessor *precede,double distancia[][NUM_STATIONS],int linha[][NUM_STATIONS]);
 int astar(LISTAADJ *listaAdj,int origemRotulo,int destinoRotulo,double distancia[][NUM_STATIONS],double distancia_real[][NUM_STATIONS],int linha[][NUM_STATIONS],STAR_RESULT *result);
